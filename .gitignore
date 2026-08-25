@@ -1,0 +1,15 @@
+# k6 실행 결과
+results/
+*.ndjson
+*.summary.json
+
+# 로컬 환경 설정 (계정·주소 등 비밀값)
+.env
+.env.*
+!.env.example
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
