@@ -13,7 +13,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { thresholds } from '../config/thresholds.js';
 import { SMOKE } from '../config/env.js';
-import { url, json, okCheck, pickN, randInt, idemKey, TAG, OK, OK_OR_CONFLICT } from '../lib/http.js';
+import { url, json, okCheck, pickN, randInt, idemKey, requestId, TAG, OK, OK_OR_CONFLICT } from '../lib/http.js';
 import { ensureStaff, writeHeaders } from '../lib/auth.js';
 import { buildOrder, createOrder, createEntry } from '../lib/api.js';
 import { loadFixtures } from '../lib/setupData.js';
@@ -61,15 +61,18 @@ function orderBody(data, quantityBump) {
 function concurrentSameKey(data) {
   const key = idemKey('idem-batch');
   const body = JSON.stringify(orderBody(data));
+  const baseHeaders = writeHeaders({ 'Content-Type': 'application/json', 'Idempotency-Key': key });
   const params = {
-    headers: writeHeaders({ 'Content-Type': 'application/json', 'Idempotency-Key': key }),
+    headers: baseHeaders,
     tags: { name: TAG.orderCreate },
     responseCallback: OK_OR_CONFLICT,
   };
 
   const reqs = [];
   for (let i = 0; i < 5; i++) {
-    reqs.push(['POST', url('/api/v1/orders'), body, params]);
+    reqs.push(['POST', url('/api/v1/orders'), body, Object.assign({}, params, {
+      headers: Object.assign({}, baseHeaders, { 'X-Request-Id': requestId() }),
+    })]);
   }
   const responses = http.batch(reqs);
 

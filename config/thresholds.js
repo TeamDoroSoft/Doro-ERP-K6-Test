@@ -1,7 +1,10 @@
 // 합격 기준 (문서 5.2). 운영 목표 확정 전까지는 제안값이다.
 
 const READ_TAGS = ['menu', 'order_list', 'order_detail', 'table_list', 'entry_list', 'fulfillment_list'];
-const WRITE_TAGS = ['order_create', 'entry_create'];
+const WRITE_TAGS = [
+  'order_create', 'order_complete', 'order_cancel', 'entry_create',
+  'entry_transition', 'fulfillment_ready', 'kiosk_activate', 'login',
+];
 
 function readThresholds() {
   const t = {};

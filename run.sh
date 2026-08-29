@@ -12,7 +12,7 @@
 #   BASE_URL   (필수) Edge 주소
 #   RUN_ID     (필수) 회차 식별자. 예: LOADTEST-007
 #   TENANT_CODE OWNER_ID OWNER_PW STAFF_PW KIOSK_SECRET
-#   VU_NORMAL VU_PEAK VU_LIMIT   기본 100 / 300 / 500
+#   VU_NORMAL VU_PEAK VU_LIMIT   기본 10 / 50 / 100
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -47,6 +47,7 @@ SCENARIOS=(
   "s8_spike"
   "s9_soak"
   "s10_stress"
+  "s11_dine_in"
 )
 
 case "${1:-full}" in

@@ -85,8 +85,11 @@ export function orderFlow(data) {
     fulfillmentEmpty.add(1);
   }
 
-  // 준비완료된 주문의 90% 완료, 10% 취소
-  if (Math.random() < 0.9) {
+  // 결제/OrderAccepted를 이 시나리오에서 호출하지 않으므로 대부분 CREATED다.
+  // CREATED 주문은 완료할 수 없으므로 취소하고, 실제 ACCEPTED만 완료한다.
+  const current = getOrder(order.orderId);
+  const currentView = json(current);
+  if (currentView && currentView.status === 'ACCEPTED' && Math.random() < 0.9) {
     const done = completeOrder(order.orderId);
     okCheck(done, '주문 완료', [200]);
     const d = json(done);

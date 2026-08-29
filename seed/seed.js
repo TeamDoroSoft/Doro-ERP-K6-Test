@@ -17,9 +17,9 @@
 
 import { fail } from 'k6';
 import { check } from 'k6';
-import { post, get, json, okCheck } from '../lib/http.js';
+import { post, get, json, okCheck, idemKey } from '../lib/http.js';
 import { writeHeaders } from '../lib/auth.js';
-import { loginRaw } from '../lib/auth.js';
+import { ensureStaff } from '../lib/auth.js';
 import { OWNER_ID, OWNER_PW, STAFF_PREFIX, STAFF_PW, RUN_ID, TENANT_CODE } from '../config/env.js';
 
 const SEED_STAFF = Number(__ENV.SEED_STAFF || 100);
@@ -39,16 +39,10 @@ export default function () {
   console.log(`[시드] 업체=${TENANT_CODE} RUN_ID=${RUN_ID}`);
 
   // 1) OWNER 로그인
-  const login = loginRaw(OWNER_ID, OWNER_PW);
-  if (login.status !== 200) {
-    fail(`OWNER 로그인 실패 ${login.status}. 업체와 최초 OWNER 계정이 만들어져 있는지 확인하세요.\n` +
-         `본문: ${String(login.body).slice(0, 300)}`);
-  }
-  const me = json(login);
-  if (me && me.passwordChangeRequired) {
-    console.warn('[경고] OWNER 비밀번호 변경이 필요한 상태입니다. ' +
-      'PATCH /api/v1/employees/me/password 로 먼저 변경한 뒤 다시 실행하세요.');
-  }
+  // ensureStaff also captures the XSRF-TOKEN cookie. A raw login followed by
+  // writeHeaders() would leave the CSRF header unset and every mutation would
+  // be rejected by the Edge boundary.
+  ensureStaff({ owner: true });
 
   // 2) 카테고리
   const categoryIds = [];
@@ -106,7 +100,7 @@ export default function () {
       loginId: loginId,
       temporaryPassword: STAFF_PW,
       role: 'STAFF',
-    }, 'seed_employee', { headers: writeHeaders({}) });
+    }, 'seed_employee', { headers: writeHeaders({ 'Idempotency-Key': idemKey('seed-employee') }) });
     if (res.status === 201 || res.status === 200) staffCount++;
     else if (i <= 3) console.error(`직원 ${loginId} 생성 실패 ${res.status} ${String(res.body).slice(0, 200)}`);
   }

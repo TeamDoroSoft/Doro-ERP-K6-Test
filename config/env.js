@@ -27,6 +27,10 @@ export const STAFF_COUNT = num('STAFF_COUNT', 500);
 // 키오스크 기기. 시드 단계에서 device001 ~ deviceNNN 로 등록해 둔다.
 export const KIOSK_PREFIX = str('KIOSK_PREFIX', 'device');
 export const KIOSK_SECRET = str('KIOSK_SECRET', 'doro-kiosk-secret');
+// Registration issues a unique raw secret per device. For Prod Alpha pass
+// comma-separated secrets in device order; the legacy single value remains a
+// local-only fallback.
+export const KIOSK_SECRETS = str('KIOSK_SECRETS', '');
 export const KIOSK_COUNT = num('KIOSK_COUNT', 200);
 
 // ---------------------------------------------------------------------------
@@ -34,13 +38,13 @@ export const KIOSK_COUNT = num('KIOSK_COUNT', 200);
 //   팀 협의 목표치. 실측 후 조정한다.
 // ---------------------------------------------------------------------------
 export const LOAD = {
-  normal: num('VU_NORMAL', 100), // 정상
-  peak: num('VU_PEAK', 300),     // 피크
-  limit: num('VU_LIMIT', 500),   // 한계 확인
+  normal: num('VU_NORMAL', 10),  // Stage 1
+  peak: num('VU_PEAK', 50),      // Stage 3
+  limit: num('VU_LIMIT', 100),   // Stage 4
 };
 
 // 열린 모델(초당 요청) 기준값. 동시 사용자 기준값에서 환산한 근사치.
-// 사용자 1명이 대략 6초에 1회 요청한다고 보고 VU / 6 으로 잡았다.
+// 사용자 1명이 대략 6초에 1회 iteration한다고 보고 VU / 6 으로 잡았다.
 export const RATE = {
   normal: num('RPS_NORMAL', Math.round(LOAD.normal / 6)),
   peak: num('RPS_PEAK', Math.round(LOAD.peak / 6)),
